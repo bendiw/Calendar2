@@ -49,6 +49,22 @@ public class Meeting {
 		}
 	}
 	
+	public boolean collides(Meeting m){
+		int otherStart=Integer.parseInt(m.getStartTime());
+		int otherEnd = Integer.parseInt(m.getEndTime());
+		int thisStart = Integer.parseInt(startTime);
+		int thisEnd = Integer.parseInt(endTime);
+		if(otherEnd > thisStart && otherEnd < thisEnd){
+			return true;
+		}else if(otherStart>thisStart&&otherStart<thisEnd){
+			return true;
+		}else if(otherStart>thisStart&&otherEnd<thisEnd){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
 	
 	
 	public Meeting(LocalDate date, Person leader, String start, String end, String title){
