@@ -13,7 +13,7 @@ public class Person implements NotificationListener{
 	private String email;
 	private int IDno;
 	private ArrayList<Group> groups = new ArrayList<Group>();
-	protected ArrayList<Invitation> invites;
+	protected ArrayList<Invitation> invites = new ArrayList<Invitation>();
  
 	public Person(String name, int IDno){
 		setName(name);
@@ -121,12 +121,13 @@ public class Person implements NotificationListener{
 
 	}
 	
-	public void answerToInvites() {
-		for (Invitation inv : invites) {
-			// sjekk om invitasjonens møte krasjer med møter som allerede er lagt
-			// inn i kalenderen til Person. Hvis det ikke krasjer, 
+	public boolean answerToInvite(Invitation inv, boolean ans) {
+		if (cal.collidesWith(inv.meeting).isEmpty()) { // møtet krasjer ikke med en dritt
+			return ans;
+		} else {
 			
 		}
+	
 	}
 
 	

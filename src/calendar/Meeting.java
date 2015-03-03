@@ -16,6 +16,7 @@ public class Meeting {
 	private String startTime;
 	private String endTime;
 	private String room;
+	protected int priority;
 	
 	public int[] getDuration(){
 		int hours = Integer.parseInt(endTime.substring(0, 2))-Integer.parseInt(startTime.substring(0, 2));
