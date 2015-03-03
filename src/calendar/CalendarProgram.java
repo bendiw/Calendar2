@@ -12,6 +12,33 @@ public class CalendarProgram {
 	private Scanner s;
 	private CalendarPrinter printer;
 	
+	
+	public void respondToInv(){
+		
+	}
+	
+	public void printInvitations(){
+//		LocalDate date;
+		if(p.invites.isEmpty()){
+			System.out.println("Currently no invitations.");
+			return;
+		}
+		for (Invitation inv : p.invites) {
+//			date = inv.meeting.getDate();
+			System.out.println(inv);
+		}
+		String invMenu = "Enter the invitation's index number to respond, or press Enter to exit to main menu.";
+		String input = s.nextLine();
+		while(true){
+			if(input.isEmpty()){
+				return;
+			}
+			if(Integer.parseInt(input)<=p.invites.size()&&Integer.parseInt(input)>0){
+				System.out.println("Responding to the following invitation:\n"+p.invites.get(Integer.parseInt(input)));
+			}
+		}
+	}
+	
 	public void init(){
 		c = new GeneralCal();
 		p = new Person(c);
@@ -20,7 +47,7 @@ public class CalendarProgram {
 	}
 	
 	public String getMenu(){
-		return "Menu:\n1. View dates as list\n2. Add meeting\n3. Remove or edit meeting\n4. Next month\n5. Previous month\n6. View single day";
+		return "Menu:\n1. View invitations\n2. Add meeting\n3. Remove or edit meeting\n4. Next month\n5. Previous month\n6. View single day";
 	}
 	
 	public String getDayName(LocalDate date){
@@ -253,7 +280,7 @@ public class CalendarProgram {
 				System.out.println(getMenu());
 			}
 			if(choice==1){
-				System.out.println("Not yet implemented!");
+				printInvitations();
 				printer.print(c);
 			}else if(choice ==2){
 				inputForMeeting();
