@@ -1,9 +1,5 @@
 package calendar;
 
 public class StringTest {
-
-	private String test2;
-	private String test3;
-	
-	
+	//dette er en string håhå
 }
