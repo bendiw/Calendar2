@@ -2,7 +2,7 @@ package calendar;
 
 public class StringTest {
 
-	//hei!!!
+	private String test;
 
 	
 	
