@@ -5,7 +5,6 @@ import no.hal.jex.runtime.JExercise;
 import junit.framework.TestCase;
 import no.hal.jex.standalone.JexStandalone;
 
-
 public class PersonTest extends TestCase {
 
 	private Person person;
