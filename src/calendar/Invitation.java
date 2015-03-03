@@ -40,6 +40,10 @@ public class Invitation {
 			// varsle fra om at g har avslått?
 		}
 	}
+	
+	public static void main(String[] args) {
+		System.out.println("hrei");
+	}
 		
 	
 	
