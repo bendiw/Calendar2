@@ -13,6 +13,7 @@ public class Person implements NotificationListener{
 	private String email;
 	private int IDno;
 	private ArrayList<Group> groups = new ArrayList<Group>();
+	protected ArrayList<Invitation> invites;
  
 	public Person(String name, int IDno){
 		setName(name);
@@ -112,6 +113,20 @@ public class Person implements NotificationListener{
 		return;
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public void addInvitation(Invitation inv) {
+		invites.add(inv);
+		// trenger kanskje mer validering!
+
+	}
+	
+	public void answerToInvites() {
+		for (Invitation inv : invites) {
+			// sjekk om invitasjonens møte krasjer med møter som allerede er lagt
+			// inn i kalenderen til Person. Hvis det ikke krasjer, 
+			
+		}
 	}
 
 	

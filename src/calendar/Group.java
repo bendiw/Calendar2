@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Group {
 	
-	private ArrayList<Person> members;
+	protected ArrayList<Person> members;
 	private PersonalCal cal;
 	private String name;
 	

@@ -4,24 +4,40 @@ import java.util.List;
 
 public class Invitation {
 
-	private Meeting meeting;
+	protected Meeting meeting;
 	private List<Person> invitedPersons;
 	private List<Group> invitedGroups;
 	
-	private void sendInvite(Group g) {
-			
+	
+	private void sendInviteToGroups() {
+		for (Group g : invitedGroups) {
+			for (Person p : g.members) {
+				p.addInvitation(this);
+			}
+		}
 	}
 		
-	private void sendInvite(Person p) {
-			
+	private void sendInviteToPersons() {
+		for (Person p : invitedPersons) {
+			p.addInvitation(this);				
+		}
 	}
 		
-	protected void respond(Person p, boolean ans) {
+	protected void respond(Person p, boolean ans) { // for at ans==true må ikke møtet krasje i personal calendar
 		if (ans == true) {
-			// legg til p i attendinglisten til meeting
+			meeting.addPerson(p);
+			// sjekk 
 		}
 		else {
 			// varsle fra om at p har avslått?
+		}
+	}
+	
+	protected void respond(Group g, boolean ans) {
+		if (ans == true) {
+			// legg til g i attendinglist til meeting
+		} else {
+			// varsle fra om at g har avslått?
 		}
 	}
 		
