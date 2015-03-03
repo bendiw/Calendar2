@@ -33,6 +33,20 @@ public class GeneralCal {
 		return toReturn;
 	}
 	
+	public void handleCollision(List<Meeting> collidesWith, Meeting m) {
+		int mid_min = m.priority;
+		Meeting firstpri = m;
+		ArrayList<Meeting> samepri = new ArrayList<Meeting>();
+		for (Meeting meeting : collidesWith) {
+			if (meeting.priority < mid_min) {
+				mid_min = meeting.priority;
+				firstpri = meeting;
+			
+				
+			}		
+		}
+	}
+	
 	public List<Meeting> getDayAgenda(LocalDate date){
 		if(meetingsByDate.containsKey(date)){
 			return meetingsByDate.get(date);

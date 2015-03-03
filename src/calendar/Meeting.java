@@ -44,6 +44,14 @@ public class Meeting {
 		}
 	}
 	
+	public void setPriority(int pri) {
+		priority = pri;
+	}
+	
+	public int getPriority() {
+		return priority;
+	}
+	
 	public void addGroup(Group g){
 		if(!groups.contains(g)){
 			groups.add(g);
