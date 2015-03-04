@@ -2,7 +2,6 @@ package calendar;
 
 import java.util.List;
 import java.util.Scanner;
-
 import org.joda.time.LocalDate;
 
 public class CalendarProgram {
@@ -11,8 +10,6 @@ public class CalendarProgram {
 	private GeneralCal c;
 	private Scanner s;
 	private CalendarPrinter printer;
-	
-	
 	public void respondToInv(){
 		
 	}
@@ -95,15 +92,7 @@ public class CalendarProgram {
 	     }
 	}
 	
-	public void showSingleDay(){
-		System.out.println("Enter date...");
-		String date = s.nextLine();
-		int[] dateInput=new int[3];
-		String[] dateSplit = date.split(" ");
-		for (int i = 0; i < 3; i++) {
-			dateInput[i]=Integer.parseInt(dateSplit[i]);
-		}
-		LocalDate toView = new LocalDate(dateInput[2],dateInput[1],dateInput[0]);
+	public void showSingleDay(LocalDate toView){
 		List<Meeting> agenda = c.getDayAgenda(toView);
 		System.out.println("--- Viewing Single Day ---");
 		System.out.println(getDayName(toView)+"\t"+toView.getDayOfMonth()+".\t"+printer.getMonthName(toView.getMonthOfYear()));
@@ -117,6 +106,18 @@ public class CalendarProgram {
 			System.out.println("No events");
 		}
 		System.out.println("------------------------------------------");
+		System.out.println("1. Next day\n2. Previous day\nHit Enter to exit");
+		while(true){
+			String input = s.nextLine();
+			if(Integer.parseInt(input)==1){
+				showSingleDay(toView.plusDays(1));
+			}else if(Integer.parseInt(input)==2){
+				showSingleDay(toView.minusDays(1));
+			}else if(input.isEmpty()){
+				return;
+			}
+			System.out.println("Invalid command!");
+		}
 	}
 	
 	public void printPersonList(){
@@ -294,7 +295,15 @@ public class CalendarProgram {
 				c.rollMonth(false);
 				printer.print(c);
 			}else if(choice == 6){
-				showSingleDay();
+				System.out.println("Enter date to view, format DD MM YYYY...");
+				String date = s.nextLine();
+				int[] dateInput=new int[3];
+				String[] dateSplit = date.split(" ");
+				for (int i = 0; i < 3; i++) {
+					dateInput[i]=Integer.parseInt(dateSplit[i]);
+				}
+				LocalDate toView = new LocalDate(dateInput[2],dateInput[1],dateInput[0]);
+				showSingleDay(toView);
 				printer.print(c);
 			}
 		}
