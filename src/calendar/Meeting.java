@@ -14,7 +14,7 @@ public class Meeting {
 	private List<Person> attending;
 	private List<Group> groups;
 	private String startTime;
-	private String endTime;
+	private String endTime="-1";
 	private String room;
 	protected int priority;
 	
@@ -115,6 +115,10 @@ public class Meeting {
 
 
 	public void setTitle(String title) {
+		if(title.isEmpty()){
+			this.title="Untitled Meeting";
+			return;
+		}
 		this.title = title;
 	}
 
@@ -125,7 +129,12 @@ public class Meeting {
 
 
 	public void setStartTime(String startTime) {
-		if (startTime.matches("[0-9]+") && startTime.length() > 3) {
+		int end = Integer.parseInt(this.endTime);
+		int start = Integer.parseInt(startTime);
+		if(end<0){
+			end=start+1;
+		}
+		if (startTime.matches("[0-9]+") && startTime.length() > 3&& (end-start)>0) {
 			this.startTime = startTime;
 		}else{
 			throw new IllegalArgumentException("Invalid format!");

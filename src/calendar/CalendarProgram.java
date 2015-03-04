@@ -10,9 +10,6 @@ public class CalendarProgram {
 	private GeneralCal c;
 	private Scanner s;
 	private CalendarPrinter printer;
-	public void respondToInv(){
-		
-	}
 	
 	public void printInvitations(){
 //		LocalDate date;
@@ -44,7 +41,7 @@ public class CalendarProgram {
 	}
 	
 	public String getMenu(){
-		return "Menu:\n1. View invitations\n2. Add meeting\n3. Remove or edit meeting\n4. Next month\n5. Previous month\n6. View single day";
+		return "Menu:\n1. View invitations\n2. Add meeting\n3. View single day\n4. Next month\n5. Previous month\n";
 	}
 	
 	public String getDayName(LocalDate date){
@@ -92,6 +89,82 @@ public class CalendarProgram {
 	     }
 	}
 	
+	public void editMeeting(LocalDate date){
+		System.out.println("Choose meeting to edit by entering title or hit Enter to exit..."); //will be changed to accept meetingID(int)
+		Meeting toEdit=null;
+		while(true){
+			try{
+				String input = s.nextLine();
+				if(input.isEmpty()){
+					return;
+				}
+				for (Meeting  m : c.getDayAgenda(date)) {
+					if(input.toLowerCase().equals(m.getTitle().toLowerCase())){
+						toEdit=m;
+					}
+				}
+			}catch(Exception e){
+				System.out.println("Could not find meeting. Try again or hit Enter to exit...");
+			}
+			if(toEdit!=null){
+				break;
+			}else{
+				System.out.println("Could not find meeting. Try again or hit Enter to exit...");
+			}
+		}
+		try{
+			while(true){
+				System.out.println("Editing:\n\n"+toEdit+"\n");
+				System.out.println("Choose attribute to change or press Enter to exit:\n1. Title\n2. Start time\n3. End time\n4. Description\n5. Attending");
+				int choice = Integer.parseInt(s.nextLine());
+				switch (choice) {
+				case 1:
+					System.out.println("Enter new title...");
+					String newTitle = s.nextLine();
+					toEdit.setTitle(newTitle);
+					System.out.println("Title updated!\n");
+					break;
+				case 2:
+					System.out.println("Enter new start time, format HHMM...");
+					while(true){
+						try{
+							String newStart = s.nextLine();
+							toEdit.setStartTime(newStart);
+							System.out.println("Updated start time!");
+							break;
+						}catch(Exception e){
+							System.out.println("Invalid time");
+						}
+					}
+					break;
+				case 3:
+					System.out.println("Enter new end time, format HHMM...");
+					while(true){
+						try{
+							String newEnd = s.nextLine();
+							toEdit.setEndTime(newEnd);
+							System.out.println("Updated end time!");
+							break;
+						}catch(Exception e){
+							System.out.println("Invalid time");
+						}
+					}
+					break;
+				case 4: 
+					System.out.println("Enter new description...");
+					String newDesc = s.nextLine();
+					toEdit.setDescription(newDesc);
+					System.out.println("Updated description!");
+					break;
+				default:
+					break;
+				}
+			}
+		}catch(Exception e){
+			return;
+		}
+	}
+	
 	public void showSingleDay(LocalDate toView){
 		List<Meeting> agenda = c.getDayAgenda(toView);
 		System.out.println("--- Viewing Single Day ---");
@@ -106,15 +179,23 @@ public class CalendarProgram {
 			System.out.println("No events");
 		}
 		System.out.println("------------------------------------------");
-		System.out.println("1. Next day\n2. Previous day\nHit Enter to exit");
+		System.out.println("1. Next day\n2. Previous day\n3. Edit or remove meeting\n4. Create meeting\nHit Enter to exit");
 		while(true){
 			String input = s.nextLine();
+			if(input.isEmpty()){
+				return;
+			}
 			if(Integer.parseInt(input)==1){
 				showSingleDay(toView.plusDays(1));
 			}else if(Integer.parseInt(input)==2){
 				showSingleDay(toView.minusDays(1));
-			}else if(input.isEmpty()){
-				return;
+			}else if(Integer.parseInt(input)==3){
+				editMeeting(toView);
+				break;
+			}else if(Integer.parseInt(input)==4){
+				inputForMeeting(true);
+//				showSingleDay(toView); Kan legges til dersom det er ønskelig å gå tilbake til single date. Nested call problem?
+				break;
 			}
 			System.out.println("Invalid command!");
 		}
@@ -152,8 +233,10 @@ public class CalendarProgram {
 		
 	}
 	
-	public void inputForMeeting(){
+	public void inputForMeeting(boolean today){
 		LocalDate localDateToEnter;
+		if(!today){
+			
 		System.out.print("Creating meeting. Enter date or press enter for today.\nFormat for date is DD MM YYYY...\n");
 		String date = s.nextLine();
 		if(date.isEmpty()){
@@ -174,12 +257,13 @@ public class CalendarProgram {
 				}
 			}
 		}
+		}else{
+			localDateToEnter=new LocalDate();
+			System.out.println("Creating meeting on "+localDateToEnter+".");
+		}
 		Meeting meeting = new Meeting(localDateToEnter, this.p);
 		System.out.println("Enter title...");
 		String titleInput = s.nextLine();
-		if(titleInput.equals("")){
-			titleInput="Untitled meeting";
-		}
 		meeting.setTitle(titleInput);
 		System.out.println("Enter start time, format HHMM...");
 		String startInput, endInput = "";
@@ -212,8 +296,13 @@ public class CalendarProgram {
 		}
 		System.out.println("Add attendees now?\n1. Yes\n2. No");
 		String peopleInput = s.nextLine();
-		if(Integer.parseInt(peopleInput) ==1){
-			printPersonList();
+		try{
+			if(Integer.parseInt(peopleInput) ==1){
+				printPersonList();
+			}
+		}catch(Exception e){
+			
+		}
 //				for(Person p : persons){
 //					System.out.println(p.getIDno()+"\t"+p.getName());
 //				}
@@ -221,7 +310,6 @@ public class CalendarProgram {
 //					meeting.addPerson(persons.get(addInput));
 //					System.out.println("Person added!");
 //				}
-		}
 		p.createMeeting(meeting);
 		System.out.println("Meeting created! Summary:");
 		System.out.println("Date: "+localDateToEnter);
@@ -233,7 +321,7 @@ public class CalendarProgram {
 		System.out.println("Enter IDno...");
 		while(true){
 			try{
-				p.setIDno(Integer.parseInt(s.nextLine()));
+				p.setIDno(Integer.parseInt(s.nextLine().trim()));
 				break;
 			}catch(Exception e){
 				System.out.println("IDnumber must be an integer!");
@@ -255,7 +343,7 @@ public class CalendarProgram {
 	public void run(){
 		System.out.println("Welcome!");
 		System.out.println("Choose an action...\n1. Login\n2. New User");
-		String choice1 = s.nextLine();
+		String choice1 = s.nextLine().trim();
 		while(true){
 			try{
 				if(Integer.parseInt(choice1)==1){
@@ -269,7 +357,7 @@ public class CalendarProgram {
 			}catch(Exception e){
 				System.out.println("Please enter a command.");
 			}
-			choice1 = s.nextLine();
+			choice1 = s.nextLine().trim();
 		}
 		printer.print(c);
 		System.out.println("Press enter to show menu.");
@@ -284,10 +372,32 @@ public class CalendarProgram {
 				printInvitations();
 				printer.print(c);
 			}else if(choice ==2){
-				inputForMeeting();
+				inputForMeeting(false);
 				printer.print(c);
 			}else if(choice==3){
-				System.out.println("Not yet implemented!");
+				System.out.println("Hit Enter for today, or input date to view, format DD MM YYYY...");
+				LocalDate toView;
+				while(true){
+					try{
+						String date = s.nextLine();
+						if(date.isEmpty()){
+								toView = new LocalDate();
+								break;
+						}else{
+							int[] dateInput=new int[3];
+							String[] dateSplit = date.split(" ");
+							for (int i = 0; i < 3; i++) {
+								dateInput[i]=Integer.parseInt(dateSplit[i]);
+							}
+							toView = new LocalDate(dateInput[2],dateInput[1],dateInput[0]);
+							break;
+						}
+					}catch(Exception e){
+							System.out.println("Format was wrong! Correct format for date is DD MM YYYY");
+						}
+					}
+				showSingleDay(toView);
+				printer.print(c);
 			}else if(choice ==4){
 				c.rollMonth(true);
 				printer.print(c);
@@ -295,16 +405,7 @@ public class CalendarProgram {
 				c.rollMonth(false);
 				printer.print(c);
 			}else if(choice == 6){
-				System.out.println("Enter date to view, format DD MM YYYY...");
-				String date = s.nextLine();
-				int[] dateInput=new int[3];
-				String[] dateSplit = date.split(" ");
-				for (int i = 0; i < 3; i++) {
-					dateInput[i]=Integer.parseInt(dateSplit[i]);
-				}
-				LocalDate toView = new LocalDate(dateInput[2],dateInput[1],dateInput[0]);
-				showSingleDay(toView);
-				printer.print(c);
+				System.out.println("Not yet implemented!");
 			}
 		}
 				
