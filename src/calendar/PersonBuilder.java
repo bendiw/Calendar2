@@ -1,8 +1,13 @@
 package src.calendar;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PersonBuilder {
 
-
+	private void fetchDBInfo() {
+		
+	}
 	
 	public List<Person> getAllPersons(){
 		List<Person> toReturn = new ArrayList<Person>();
