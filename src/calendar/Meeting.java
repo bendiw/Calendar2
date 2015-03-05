@@ -16,7 +16,7 @@ public class Meeting {
 	private String startTime;
 	private String endTime="-1";
 	private String room;
-	protected int priority;
+	protected boolean priority;
 	
 	public int[] getDuration(){
 		int hours = Integer.parseInt(endTime.substring(0, 2))-Integer.parseInt(startTime.substring(0, 2));
@@ -44,11 +44,17 @@ public class Meeting {
 		}
 	}
 	
-	public void setPriority(int pri) {
+	public void removePerson(Person p) {
+		if (attending.contains(p)) {
+			attending.remove(p);
+		}
+	}
+	
+	public void setPriority(boolean pri) {
 		priority = pri;
 	}
 	
-	public int getPriority() {
+	public boolean getPriority() {
 		return priority;
 	}
 	

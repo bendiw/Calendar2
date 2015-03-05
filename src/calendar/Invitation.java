@@ -26,20 +26,14 @@ public class Invitation {
 	protected void respond(Person p, boolean ans) { // for at ans==true må ikke møtet krasje i personal calendar
 		if (ans == true) {
 			meeting.addPerson(p);
-			// sjekk 
+			// varsle fra om at p har godtatt 
 		}
 		else {
 			// varsle fra om at p har avslått?
 		}
 	}
 	
-	protected void respond(Group g, boolean ans) {
-		if (ans == true) {
-			// legg til g i attendinglist til meeting
-		} else {
-			// varsle fra om at g har avslått?
-		}
-	}
+	
 	
 	public static void main(String[] args) {
 		System.out.println("hrei");

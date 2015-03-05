@@ -121,15 +121,43 @@ public class Person implements NotificationListener{
 
 	}
 	
-	public boolean answerToInvite(Invitation inv, boolean ans) {
-		if (cal.collidesWith(inv.meeting).isEmpty()) { // møtet krasjer ikke med en dritt
-			return ans;
-		} else {
-			
-		}
+	//respond (Boolean ans) setter automatisk pri til true
+	//respond (Boolean ans, Boolean pri)
+	//setPriority: dersom et møte endrer prioritet fra false til true,
+	//settes pri til alle møter som krasjer til false
 	
+	
+	
+	
+	
+	public void respond(Invitation inv, boolean ans, boolean pri) {
+		if (ans == false) {
+			// varsle møteleder om at this har avslått invitasjonen
+			invites.remove(inv);
+		}else {
+			invites.remove(inv);
+			cal.addMeeting(inv.meeting);
+			
+			if (cal.collidesWith(inv.meeting).isEmpty()) {
+				inv.meeting.setPriority(true); //setter møtet til prioritet 1
+				inv.meeting.addPerson(this);
+				// varsle møteleder i meeting om at person har godtatt invitasjonen
+			}else {
+				if (pri == true) {
+					for (Meeting m : cal.collidesWith(inv.meeting)) {
+						m.setPriority(false);
+						m.removePerson(this); //fjerner person fra attendinglist til møtene som krasjer
+					}inv.meeting.setPriority(true);
+					inv.meeting.addPerson(this);
+					// varsle møteleder i meeting om at person har godtatt invitasjonen
+				}else {
+					inv.meeting.setPriority(false);
+				}
+			}
+		}
 	}
-
+	
+	
+	
 	
 }
-
