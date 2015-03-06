@@ -22,6 +22,7 @@ public class GeneralCal {
 		cal.add(Calendar.YEAR,-1);
 	}
 	
+	
 	public List<Meeting> collidesWith(Meeting m){
 		List<Meeting> meetingsOnDate = meetingsByDate.get(m.getDate());
 		List<Meeting> toReturn = new ArrayList<Meeting>();

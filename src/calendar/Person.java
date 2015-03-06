@@ -14,6 +14,8 @@ public class Person implements NotificationListener{
 	private int IDno;
 	private ArrayList<Group> groups = new ArrayList<Group>();
 	protected ArrayList<Invitation> invites = new ArrayList<Invitation>();
+	protected ArrayList<Notification> notifications = new ArrayList<Notification>();
+	
  
 	public Person(String name, int IDno){
 		setName(name);
@@ -121,41 +123,38 @@ public class Person implements NotificationListener{
 
 	}
 	
-	//respond (Boolean ans) setter automatisk pri til true
-	//respond (Boolean ans, Boolean pri)
-	//setPriority: dersom et møte endrer prioritet fra false til true,
-	//settes pri til alle møter som krasjer til false
-	
-	
-	
-	
-	
-	public void respond(Invitation inv, boolean ans, boolean pri) {
-		if (ans == false) {
-			// varsle møteleder om at this har avslått invitasjonen
-			invites.remove(inv);
-		}else {
-			invites.remove(inv);
-			cal.addMeeting(inv.meeting);
-			
-			if (cal.collidesWith(inv.meeting).isEmpty()) {
-				inv.meeting.setPriority(true); //setter møtet til prioritet 1
-				inv.meeting.addPerson(this);
-				// varsle møteleder i meeting om at person har godtatt invitasjonen
-			}else {
-				if (pri == true) {
-					for (Meeting m : cal.collidesWith(inv.meeting)) {
-						m.setPriority(false);
-						m.removePerson(this); //fjerner person fra attendinglist til møtene som krasjer
-					}inv.meeting.setPriority(true);
-					inv.meeting.addPerson(this);
-					// varsle møteleder i meeting om at person har godtatt invitasjonen
-				}else {
-					inv.meeting.setPriority(false);
-				}
-			}
-		}
+	public ArrayList<Notification> getNotifications() {
+		return notifications;
 	}
+	
+	
+	
+//	public void respond(Invitation inv, boolean ans, boolean pri) {
+//		if (ans == false) {
+//			// varsle møteleder om at this har avslått invitasjonen
+//			invites.remove(inv);
+//		}else {
+//			invites.remove(inv);
+//			cal.addMeeting(inv.meeting);
+//			
+//			if (cal.collidesWith(inv.meeting).isEmpty()) {
+//				inv.meeting.setPriority(true); //setter møtet til prioritet 1
+//				inv.meeting.addPerson(this);
+//				// varsle møteleder i meeting om at person har godtatt invitasjonen
+//			}else {
+//				if (pri == true) {
+//					for (Meeting m : cal.collidesWith(inv.meeting)) {
+//						m.setPriority(false);
+//						m.removePerson(this); //fjerner person fra attendinglist til møtene som krasjer, hvis person er der.
+//					}inv.meeting.setPriority(true);
+//					inv.meeting.addPerson(this);
+//					// varsle møteleder i meeting om at person har godtatt invitasjonen
+//				}else {
+//					inv.meeting.setPriority(false);
+//				}
+//			}
+//		}
+//	}
 	
 	
 	

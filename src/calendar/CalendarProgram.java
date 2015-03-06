@@ -41,7 +41,7 @@ public class CalendarProgram {
 	}
 	
 	public String getMenu(){
-		return "Menu:\n1. View invitations\n2. Add meeting\n3. View single day\n4. Next month\n5. Previous month\n";
+		return "Menu:\n1. View invitations\n2. Add meeting\n3. View single day\n4. Next month\n5. Previous month\n6. See notifications";
 	}
 	
 	public String getDayName(LocalDate date){
@@ -89,6 +89,14 @@ public class CalendarProgram {
 	     }
 	}
 	
+	public String getNotifications(){
+		try{
+			return p.getNotifications().size()+" pending notifications.";
+		}catch(Exception e){
+			return "No pending notifications.";
+		}
+	}
+	
 	public void editMeeting(LocalDate date){
 		System.out.println("Choose meeting to edit by entering title or hit Enter to exit..."); //will be changed to accept meetingID(int)
 		Meeting toEdit=null;
@@ -112,6 +120,8 @@ public class CalendarProgram {
 				System.out.println("Could not find meeting. Try again or hit Enter to exit...");
 			}
 		}
+		Meeting oldMeeting = new Meeting(new LocalDate());
+		oldMeeting.cloneFields(toEdit);
 		try{
 			while(true){
 				System.out.println("Editing:\n\n"+toEdit+"\n");
@@ -161,6 +171,7 @@ public class CalendarProgram {
 				}
 			}
 		}catch(Exception e){
+			toEdit.fireNotification(new Notification(toEdit.getChanges(oldMeeting)));
 			return;
 		}
 	}
@@ -194,7 +205,7 @@ public class CalendarProgram {
 				break;
 			}else if(Integer.parseInt(input)==4){
 				inputForMeeting(true);
-//				showSingleDay(toView); Kan legges til dersom det er ønskelig å gå tilbake til single date. Nested call problem?
+//				showSingleDay(toView); Kan legges til dersom det er ï¿½nskelig ï¿½ gï¿½ tilbake til single date. Nested call problem?
 				break;
 			}
 			System.out.println("Invalid command!");
@@ -360,6 +371,7 @@ public class CalendarProgram {
 			choice1 = s.nextLine().trim();
 		}
 		printer.print(c);
+		System.out.println(getNotifications());
 		System.out.println("Press enter to show menu.");
 		while(true){
 			int choice=0;
@@ -371,9 +383,11 @@ public class CalendarProgram {
 			if(choice==1){
 				printInvitations();
 				printer.print(c);
+				System.out.println(getNotifications());
 			}else if(choice ==2){
 				inputForMeeting(false);
 				printer.print(c);
+				System.out.println(getNotifications());
 			}else if(choice==3){
 				System.out.println("Hit Enter for today, or input date to view, format DD MM YYYY...");
 				LocalDate toView;
@@ -398,14 +412,19 @@ public class CalendarProgram {
 					}
 				showSingleDay(toView);
 				printer.print(c);
+				System.out.println(getNotifications());
 			}else if(choice ==4){
 				c.rollMonth(true);
 				printer.print(c);
+				System.out.println(getNotifications());
 			}else if(choice ==5){
 				c.rollMonth(false);
 				printer.print(c);
+				System.out.println(getNotifications());
 			}else if(choice == 6){
-				System.out.println("Not yet implemented!");
+				for (Notification n : p.getNotifications()) {
+					System.out.println(n);
+				}
 			}
 		}
 				

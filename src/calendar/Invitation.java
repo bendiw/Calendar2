@@ -22,16 +22,6 @@ public class Invitation {
 			p.addInvitation(this);				
 		}
 	}
-		
-	protected void respond(Person p, boolean ans) { // for at ans==true må ikke møtet krasje i personal calendar
-		if (ans == true) {
-			meeting.addPerson(p);
-			// varsle fra om at p har godtatt 
-		}
-		else {
-			// varsle fra om at p har avslått?
-		}
-	}
 	
 	
 	

@@ -1,5 +1,6 @@
 package calendar;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -11,8 +12,8 @@ public class Meeting {
 	private String description;
 	private String title;
 	private Person meetingLeader;
-	private List<Person> attending;
-	private List<Group> groups;
+	private List<Person> attending; //listeners for notifications
+	private List<Group> groups; // Mulig å fjerne denne? Bare persons som kan attende.
 	private String startTime;
 	private String endTime="-1";
 	private String room;
@@ -28,14 +29,17 @@ public class Meeting {
 	}
 	
 	public String toString(){
+		return title+"\n"+durationToString()+"\n"+"Description: "+description+"\nAtteding: ";
+	}
+	
+	public String durationToString(){
 		int[] duration = getDuration();
 		if(duration[1]==0){
-			return (title+"\n"+this.startTime+" - "+endTime+"\n"+"Duration: "+duration[0]+"h\n"+"Description: "+description+"\nAttending: ");
+			return (this.startTime+" - "+endTime+"\n"+"Duration: "+duration[0]+"h\n");
 		}else if(duration[0]==0){
-			return (title+"\n"+this.startTime+" - "+endTime+"\n"+"Duration: "+duration[1]+"min\n"+"Description: "+description+"\nAtteding: ");
-
+			return (this.startTime+" - "+endTime+"\n"+"Duration: "+duration[1]+"min\n");
 		}
-		return (title+"\n"+this.startTime+" - "+endTime+"\n"+"Duration: "+duration[0]+"h"+duration[1]+"min\n"+"Description: "+description+"\nAttending:");
+		return (this.startTime+" - "+endTime+"\n"+"Duration: "+duration[0]+"h"+duration[1]+"min");
 	}
 	
 	public void addPerson(Person p){
@@ -62,6 +66,14 @@ public class Meeting {
 		if(!groups.contains(g)){
 			groups.add(g);
 		}
+	}
+	
+	public void cloneFields(Meeting toClone){
+		this.date=toClone.getDate();
+		this.title=toClone.getTitle();
+		this.description=toClone.getDescription();
+		this.startTime=toClone.getStartTime();
+		this.endTime=toClone.getEndTime();
 	}
 	
 	public boolean collides(Meeting m){
@@ -142,6 +154,7 @@ public class Meeting {
 		}
 		if (startTime.matches("[0-9]+") && startTime.length() > 3&& (end-start)>0) {
 			this.startTime = startTime;
+			// 
 		}else{
 			throw new IllegalArgumentException("Invalid format!");
 		}
@@ -172,9 +185,35 @@ public class Meeting {
 	public void setRoom(String room) {
 		this.room = room;
 	}
+
 	
 	public void fireNotification(Notification n){
-		
+//		if(n.getSubject().contains("declined")){
+//			meetingLeader.notifications.add(n);
+//			return;
+////		}else{
+//			for (Person p : attending) {
+//				p.notifications.add(n);
+//			}
+//		}
+		meetingLeader.notifications.add(n);
+	}
+	
+	public List<String> getChanges(Meeting m) {
+		List<String> changes = new ArrayList<String>();
+		if (!this.date.equals(m.date)) {
+			changes.add("The meeting date is changed from "+m.date+" to "+this.date+"\n");
+		if (!this.description.equals(m.description)) {
+			changes.add("The meeting description is changed to:\n"+this.description+"\n");
+		}if (!this.title.equals(m.title)) {
+			changes.add("The meeting title is changed from '"+m.title+"' to '"+this.title+"'\n");
+		}if (!this.startTime.equals(m.startTime) || (!this.endTime.equals(m.endTime))) {
+			changes.add("The duration of the meeting is changed to: "+this.durationToString()+"\n");
+//		}if (!this.room.equals(m.room)) {
+//			changes.add("The meeting room is changed from "+m.room+" to "+this.room+"\n\n");
+		}
+		}
+		return changes;
 	}
 	
 	
