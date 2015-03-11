@@ -3,15 +3,6 @@ package calendar;
 import java.util.List;
 import java.util.Scanner;
 
-import kalender.CalendarPrinter;
-import kalender.CalendarProgram;
-import kalender.GeneralCal;
-import kalender.Group;
-import kalender.Invitation;
-import kalender.Meeting;
-import kalender.Notification;
-import kalender.Person;
-import kalender.PersonBuilder;
 
 import org.joda.time.LocalDate;
 
@@ -22,6 +13,8 @@ public class CalendarProgram {
 	private Scanner s;
 	private CalendarPrinter printer;
 	private PersonBuilder pb;
+	private PersonUpdater pu;
+	private MeetingBuilder mb;
 	
 	public String getNotifications(){
 		try{
@@ -55,10 +48,11 @@ public class CalendarProgram {
 	
 	public void init(){
 		c = new GeneralCal();
-		p = new Person(c);
+//		p = new Person(c);
 		s = new Scanner(System.in);
 		printer = new CalendarPrinter();
 		pb = new PersonBuilder();
+		pu = new PersonUpdater();
 	}
 	
 	public String getMenu(){
@@ -373,11 +367,15 @@ public class CalendarProgram {
 		System.out.println("Personalia updated!");
 	}
 	
+	public void upDateMeetingList(){
+		this.c.mapMeetings(mb.getAllMeetings());	
+		}
+	
 	public void run(){
-		Person user1 = null;
+//		Person user1 = null;
 //		System.out.println(user1);
 		String choice1;
-		while(user1==null){
+		while(p==null){
 			System.out.println("Welcome!");
 			System.out.println("Choose an action...\n1. Login\n2. New User");
 			choice1 = s.nextLine().trim();
@@ -395,19 +393,24 @@ public class CalendarProgram {
 				System.out.println("Skriv inn passord");
 				String password = s.nextLine();
 				if(Integer.parseInt(choice1)==2) {
-//					System.out.println("Fornavn:");	
-//					String firstname = s.nextLine();
-//					System.out.println("Etternavn:");
-//					String lastname = s.nextLine();
-//					System.out.println("Adresse");
-//					String address = s.nextLine();
-//					System.out.println("Mobilnr");
-//					int mobile = Integer.parseInt(s.nextLine());
-					user1 = new Person(email, password, true);
-					// her må personUpdater komme og legge inn evt resten av feltene.
+					System.out.println("Fornavn:");	
+					String firstname = s.nextLine();
+					System.out.println("Etternavn:");
+					String lastname = s.nextLine();
+					System.out.println("Adresse:");
+					String address = s.nextLine();
+					System.out.println("Mobilnummer:");
+					int mobile = Integer.parseInt(s.nextLine());
+					System.out.println("Postnummer:");
+					int postnr = Integer.parseInt(s.nextLine());
+					System.out.println("Stilling:");
+					String position = s.nextLine();
+					p = new Person(email, password, true);
+					pu.updateAll(firstname, lastname, address, postnr, mobile, position, p.getEmail());
+					System.out.println("\n\n" + "Grattis, du har nå en bruker!" + "\n" + "Velkommen til kalender din");
 					break;
 				} else {
-					user1 = new Person(email, password, false);
+					p = new Person(email, password, false);
 					break;
 				}
 			}catch(IllegalArgumentException e) {
@@ -418,6 +421,8 @@ public class CalendarProgram {
 			}
 			choice1 = s.nextLine().trim();
 		}
+		mb = new MeetingBuilder(p.getUserID());
+		updateMeetingList();
 		printer.print(c);
 		System.out.println(getNotifications());
 		System.out.println("Press enter to show menu.");
