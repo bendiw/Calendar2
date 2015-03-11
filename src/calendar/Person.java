@@ -1,25 +1,148 @@
 package calendar;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.List;
+
 import org.joda.time.*;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Person implements NotificationListener{
+import kalender.GeneralCal;
+import kalender.Group;
+import kalender.Invitation;
+import kalender.Meeting;
+import kalender.Notification;
+
+public class Person extends Database implements NotificationListener{
 	private GeneralCal cal;
 	private String name;
 	private String email;
-	private int IDno;
+	private String address;
+	private int mobile;
+	private String position;
+	private int postnr;
+
+	private int userID;
 	private ArrayList<Group> groups = new ArrayList<Group>();
 	protected ArrayList<Invitation> invites = new ArrayList<Invitation>();
 	protected ArrayList<Notification> notifications = new ArrayList<Notification>();
+
+	
+	
+	//fra User
+	String password;
+	boolean newUser;
+	
+	Statement stmt = null;
+	ResultSet rs = null;
+	String query = null;
+	PreparedStatement pstmt = null;
 	
  
-	public Person(String name, int IDno){
-		setName(name);
-		setIDno(IDno);
+	public Person(int userID, String firstname, String lastname, String address, int mobile, String email, String position, int postnr){
+//		setName(name);
+		setName(firstname+" "+lastname);
+		setUserID(userID);
+		setEmail(email);
+		this.address=address;
+		this.position=position;
+		this.mobile=mobile;
+		this.postnr=postnr;
+		
+	}
+	
+	
+	public Person(String email, String password, boolean newUser) throws Exception {
+		this.email = email;
+		this.password = password;
+		this.newUser = newUser;
+		if(newUser) {
+			if(emailExists(email)) {
+				System.out.println("Eposten finnes allerede, pr�v en annen epost.");
+				throw new IllegalArgumentException();
+			} else {
+				makeNewUser(email, password);
+			}
+			
+		} else {
+			if(emailExists(email)) {
+				loginUser(email, password);
+			} else {
+				System.out.println("Eposten finnes ikke, pr�v en ny epost.");
+				throw new IllegalArgumentException();
+			}
+		}
+	}
+	
+	public boolean makeNewUser(String email, String password) throws Exception {
+		if(isValidEmail(email)) {
+			try {
+				openConnection();
+				pstmt = conn.prepareStatement("INSERT INTO Bruker (epostadresse, passord) "
+						+ " VALUES (?, ?)");
+				pstmt.setString(1, email);
+				pstmt.setString(2, password);
+				
+				pstmt.execute();
+				return true;
+			} finally {
+				closeConnection();
+			}	
+		} else {
+			System.out.println("Ugyldig email");
+//			return false;
+			throw new IllegalArgumentException();
+		}
+	}
+	
+	public void loginUser(String email, String password) throws Exception {
+			try {
+				openConnection();
+				pstmt = conn.prepareStatement("SELECT * FROM Bruker B WHERE B.epostadresse = '" + email + "';");
+				rs = pstmt.executeQuery();
+				while (rs.next()) {
+					this.password = rs.getString("passord");
+				}
+				
+				if (this.password.equals(password)) {
+					System.out.println("Login successfull");
+				} else {
+					System.out.println("Login unsuccessfull, wrong password");
+					throw new IllegalArgumentException();
+				}
+				
+			} finally {
+				closeConnection();
+			}	
+	}
+	
+
+	public ArrayList<Notification> getNotifications() {
+		return notifications;
+	}
+	
+	public boolean emailExists(String email) throws Exception {
+		try {
+			openConnection();
+			pstmt = conn.prepareStatement("SELECT B.epostadresse FROM Bruker B WHERE B.epostadresse = '" + email + "';");
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				return true;
+			}
+		} finally {
+			closeConnection();
+		}
+		return false;
+	}
+	
+	
+	public String toString(){
+		return this.userID+"\n"+name+"\n"+email+"\n"+address+"\n"+mobile+"\n"+position+"\n"+postnr;
 	}
 	
 	public boolean isMemberOf(Group group){
@@ -37,12 +160,12 @@ public class Person implements NotificationListener{
 		return this.cal;
 	}
 	
-	public int getIDno(){
-		return this.IDno;
+	public int getUserID(){
+		return this.userID;
 	}
 	
-	public void setIDno(int id){
-		this.IDno=id;
+	public void setUserID(int userID){
+		this.userID=userID;
 	}
 	
 	public Person(GeneralCal c){
@@ -89,6 +212,13 @@ public class Person implements NotificationListener{
 		}
 		return true;
 	}
+	public void setEmail(String email) {
+//		if(isValidEmail(email)) {
+			this.email = email;
+////		} else {
+//			throw new IllegalArgumentException("Invalid email");
+//		}
+	}
 
 	public void setName(String name) {
 		if (isValidName(name)){
@@ -123,40 +253,41 @@ public class Person implements NotificationListener{
 
 	}
 	
-	public ArrayList<Notification> getNotifications() {
-		return notifications;
+	//respond (Boolean ans) setter automatisk pri til true
+	//respond (Boolean ans, Boolean pri)
+	//setPriority: dersom et møte endrer prioritet fra false til true,
+	//settes pri til alle møter som krasjer til false
+	
+	
+	
+	
+	
+	public void respond(Invitation inv, boolean ans, boolean pri) {
+		if (ans == false) {
+			// varsle møteleder om at this har avslått invitasjonen
+			invites.remove(inv);
+		}else {
+			invites.remove(inv);
+			cal.addMeeting(inv.meeting);
+			
+			if (cal.collidesWith(inv.meeting).isEmpty()) {
+				inv.meeting.setPriority(true); //setter møtet til prioritet 1
+				inv.meeting.addPerson(this);
+				// varsle møteleder i meeting om at person har godtatt invitasjonen
+			}else {
+				if (pri == true) {
+					for (Meeting m : cal.collidesWith(inv.meeting)) {
+						m.setPriority(false);
+						m.removePerson(this); //fjerner person fra attendinglist til møtene som krasjer
+					}inv.meeting.setPriority(true);
+					inv.meeting.addPerson(this);
+					// varsle møteleder i meeting om at person har godtatt invitasjonen
+				}else {
+					inv.meeting.setPriority(false);
+				}
+			}
+		}
 	}
-	
-	
-	
-//	public void respond(Invitation inv, boolean ans, boolean pri) {
-//		if (ans == false) {
-//			// varsle møteleder om at this har avslått invitasjonen
-//			invites.remove(inv);
-//		}else {
-//			invites.remove(inv);
-//			cal.addMeeting(inv.meeting);
-//			
-//			if (cal.collidesWith(inv.meeting).isEmpty()) {
-//				inv.meeting.setPriority(true); //setter møtet til prioritet 1
-//				inv.meeting.addPerson(this);
-//				// varsle møteleder i meeting om at person har godtatt invitasjonen
-//			}else {
-//				if (pri == true) {
-//					for (Meeting m : cal.collidesWith(inv.meeting)) {
-//						m.setPriority(false);
-//						m.removePerson(this); //fjerner person fra attendinglist til møtene som krasjer, hvis person er der.
-//					}inv.meeting.setPriority(true);
-//					inv.meeting.addPerson(this);
-//					// varsle møteleder i meeting om at person har godtatt invitasjonen
-//				}else {
-//					inv.meeting.setPriority(false);
-//				}
-//			}
-//		}
-//	}
-	
-	
 	
 	
 }

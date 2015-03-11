@@ -2,6 +2,17 @@ package calendar;
 
 import java.util.List;
 import java.util.Scanner;
+
+import kalender.CalendarPrinter;
+import kalender.CalendarProgram;
+import kalender.GeneralCal;
+import kalender.Group;
+import kalender.Invitation;
+import kalender.Meeting;
+import kalender.Notification;
+import kalender.Person;
+import kalender.PersonBuilder;
+
 import org.joda.time.LocalDate;
 
 public class CalendarProgram {
@@ -10,6 +21,15 @@ public class CalendarProgram {
 	private GeneralCal c;
 	private Scanner s;
 	private CalendarPrinter printer;
+	private PersonBuilder pb;
+	
+	public String getNotifications(){
+		try{
+			return p.getNotifications().size()+" pending notifications.";
+		}catch(Exception e){
+			return "No pending notifications.";
+		}
+	}
 	
 	public void printInvitations(){
 //		LocalDate date;
@@ -38,6 +58,7 @@ public class CalendarProgram {
 		p = new Person(c);
 		s = new Scanner(System.in);
 		printer = new CalendarPrinter();
+		pb = new PersonBuilder();
 	}
 	
 	public String getMenu(){
@@ -87,14 +108,6 @@ public class CalendarProgram {
 	          }
 	          agenda.set(i+1,m);  
 	     }
-	}
-	
-	public String getNotifications(){
-		try{
-			return p.getNotifications().size()+" pending notifications.";
-		}catch(Exception e){
-			return "No pending notifications.";
-		}
 	}
 	
 	public void editMeeting(LocalDate date){
@@ -174,7 +187,7 @@ public class CalendarProgram {
 			toEdit.fireNotification(new Notification(toEdit.getChanges(oldMeeting)));
 			return;
 		}
-	}
+	}	
 	
 	public void showSingleDay(LocalDate toView){
 		List<Meeting> agenda = c.getDayAgenda(toView);
@@ -205,14 +218,14 @@ public class CalendarProgram {
 				break;
 			}else if(Integer.parseInt(input)==4){
 				inputForMeeting(true);
-//				showSingleDay(toView); Kan legges til dersom det er ï¿½nskelig ï¿½ gï¿½ tilbake til single date. Nested call problem?
+//				showSingleDay(toView); Kan legges til dersom det er ønskelig å gå tilbake til single date. Nested call problem?
 				break;
 			}
 			System.out.println("Invalid command!");
 		}
 	}
 	
-	public void printPersonList(){
+	public void printPersonList() throws Exception{
 		System.out.println("Select option or type 'done' to finish creating meeting...\n1. See your groups\n2. See full list of persons\n3. Search for person to add");
 		String userInput = s.nextLine();
 		while(true){
@@ -232,6 +245,15 @@ public class CalendarProgram {
 				//group printing implementation goes here
 				break;
 			case 2: //full person list printing implementation goes here
+				try{
+					for (Person p : pb.getAllPersons()) {
+						System.out.println(p);
+					}
+				}catch(Exception e){
+					System.out.println(e);
+				}
+				
+				break;
 			case 3: 
 				System.out.println("Not implemented!");
 //				userInput = s.nextLine();
@@ -329,10 +351,10 @@ public class CalendarProgram {
 	
 	public void createUser(){
 		System.out.println("Creating new user...");
-		System.out.println("Enter IDno...");
+		System.out.println("Enter userID...");
 		while(true){
 			try{
-				p.setIDno(Integer.parseInt(s.nextLine().trim()));
+				p.setUserID(Integer.parseInt(s.nextLine().trim()));
 				break;
 			}catch(Exception e){
 				System.out.println("IDnumber must be an integer!");
@@ -352,19 +374,45 @@ public class CalendarProgram {
 	}
 	
 	public void run(){
-		System.out.println("Welcome!");
-		System.out.println("Choose an action...\n1. Login\n2. New User");
-		String choice1 = s.nextLine().trim();
-		while(true){
+		Person user1 = null;
+//		System.out.println(user1);
+		String choice1;
+		while(user1==null){
+			System.out.println("Welcome!");
+			System.out.println("Choose an action...\n1. Login\n2. New User");
+			choice1 = s.nextLine().trim();
 			try{
-				if(Integer.parseInt(choice1)==1){
-					System.out.println("Not implemented!");			
-				}else if(Integer.parseInt(choice1)!=2){
-					System.out.println("Invalid command!");
-				}else{
-					createUser();
+//				if(Integer.parseInt(choice1)==1){
+//					System.out.println("Not implemented!");			
+//				}else if(Integer.parseInt(choice1)!=2){
+//					System.out.println("Invalid command!");
+//				}else{
+//					createUser();
+//					break;
+//				}
+				System.out.println("Skriv inn email");
+				String email = s.nextLine();
+				System.out.println("Skriv inn passord");
+				String password = s.nextLine();
+				if(Integer.parseInt(choice1)==2) {
+//					System.out.println("Fornavn:");	
+//					String firstname = s.nextLine();
+//					System.out.println("Etternavn:");
+//					String lastname = s.nextLine();
+//					System.out.println("Adresse");
+//					String address = s.nextLine();
+//					System.out.println("Mobilnr");
+//					int mobile = Integer.parseInt(s.nextLine());
+					user1 = new Person(email, password, true);
+					// her må personUpdater komme og legge inn evt resten av feltene.
+					break;
+				} else {
+					user1 = new Person(email, password, false);
 					break;
 				}
+			}catch(IllegalArgumentException e) {
+				System.out.println("Prøv på nytt" + "\n");
+				continue;
 			}catch(Exception e){
 				System.out.println("Please enter a command.");
 			}
@@ -413,23 +461,30 @@ public class CalendarProgram {
 				showSingleDay(toView);
 				printer.print(c);
 				System.out.println(getNotifications());
+
 			}else if(choice ==4){
 				c.rollMonth(true);
 				printer.print(c);
 				System.out.println(getNotifications());
+
 			}else if(choice ==5){
 				c.rollMonth(false);
 				printer.print(c);
 				System.out.println(getNotifications());
+
 			}else if(choice == 6){
 				for (Notification n : p.getNotifications()) {
 					System.out.println(n);
 				}
-			}
+			}	
 		}
-				
-				
-		}	
+	}
+	
+//	public static void main(String[] args) {
+//		CalendarProgram cp = new CalendarProgram();
+//		cp.init();
+//		cp.run();
+//	}
 	
 	public static void main(String[] args) {
 		CalendarProgram cp = new CalendarProgram();
