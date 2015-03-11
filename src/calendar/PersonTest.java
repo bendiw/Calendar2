@@ -15,7 +15,7 @@ public class PersonTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		person = new Person("Kevin Ofstad", 1);
+		person = new Person("Per Person", 1);
 	}
 	
 	
@@ -30,8 +30,8 @@ public class PersonTest extends TestCase {
 		testInvalidName("O N", name);
 		testInvalidName("O. Nordmann", name);
 		try {
-			person.setName("Espen Askeladd");
-			assertEquals("Espen Askeladd", person.getName());
+			person.setName("Ola Nordmann");
+			assertEquals("Ola Nordmann", person.getName());
 		} catch (Exception e) {
 			fail("Espen Askeladd is a valid name");
 		}
