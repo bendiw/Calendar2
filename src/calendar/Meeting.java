@@ -29,7 +29,7 @@ public class Meeting {
 	}
 	
 	public String toString(){
-		return title+"\n"+durationToString()+"\n"+"Description: "+description+"\nAtteding: ";
+		return title+"\n"+durationToString()+"\n"+"Description: "+description+"\nAttending: ";
 	}
 	
 	public String durationToString(){

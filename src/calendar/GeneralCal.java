@@ -14,6 +14,20 @@ public class GeneralCal {
 	private Map<LocalDate,List<Meeting>> meetingsByDate;
 	private Calendar cal;
 	
+	public void mapMeetings(List<Meeting> meetings){
+		for (Meeting meeting : meetings) {
+			if(meetingsByDate.containsKey(meeting.getDate())){
+				List<Meeting> toAdd = meetingsByDate.get(meeting.getDate());
+				toAdd.add(meeting);
+				meetingsByDate.put(meeting.getDate(), toAdd);							
+			}else{
+				List<Meeting> toAdd = new ArrayList<Meeting>();
+				toAdd.add(meeting);
+				meetingsByDate.put(meeting.getDate(), toAdd);
+			}
+		}
+	}
+	
 	public void RollYear(boolean forward){
 		if(forward){
 			cal.add(Calendar.YEAR, 1);

@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.joda.time.LocalDate;
 
 public class MeetingBuilder extends Database{
@@ -24,8 +25,12 @@ public class MeetingBuilder extends Database{
 		private ResultSet rs;
 		private String query = null;
 		private PreparedStatement pstmt = null;
+		private int ownerID;
 		
-		private ArrayList<Integer> list = new ArrayList<Integer>();
+		public MeetingBuilder(int ownerID){
+			this.ownerID=ownerID;
+		}
+		
 			
 		public boolean meetingIDExists(int meetingID) throws Exception {
 			try {
@@ -47,19 +52,21 @@ public class MeetingBuilder extends Database{
 		
 		
 		
-		public ArrayList<Integer> addMeetingIDtoList(LocalDate date) throws SQLException {
-			String dateInput = convertLocalDate(date);
-			stmt = conn.createStatement();
-			stmt.executeQuery("SELECT møteID FROM Møte WHERE Møte.dato = "+ dateInput+ ";");
-			while(rs.next()) {
-				list.add(rs.getInt("møteID"));
-			}
+		public ArrayList<Integer> addMeetingIDtoList() throws Exception {
+			ArrayList<Integer> list = new ArrayList<Integer>();
+				super.openConnection();
+				stmt = conn.createStatement();
+				rs = stmt.executeQuery("SELECT møteID FROM Møte, Invitasjon WHERE Møte.møteID = Invitasjon.Møte_møteID AND Invitasjon.Bruker_brukerID = "+ this.ownerID + ";");
+				while(rs.next()) {
+					list.add(rs.getInt("møteID"));
+				}
+				closeConnection();
 			return list;
 		}
 		
-		public List<Meeting> getAllMeetings(LocalDate date) throws Exception{
+		public List<Meeting> getAllMeetings() throws Exception{
 			List<Meeting> toReturn = new ArrayList<Meeting>();
-			ArrayList<Integer> list = addMeetingIDtoList(date);
+			ArrayList<Integer> list = addMeetingIDtoList();
 			for (int meetingID : list) {
 				toReturn.add(getMeeting(meetingID));
 			}
@@ -79,20 +86,18 @@ public class MeetingBuilder extends Database{
 						this.room = rs.getInt("romID");
 						this.place = rs.getString("sted");
 						this.title = rs.getString("tittel");
-						String[] startDateTime = rs.getString("fraTidspunkt").split(" ");
-						String[] startDate = startDateTime[0].split("-");
+						String[] startDate = rs.getString("dato").split("-");
 						this.date = new LocalDate(Integer.parseInt(startDate[0]),Integer.parseInt(startDate[1]),Integer.parseInt(startDate[2]));
-						String[] startTime2 = startDateTime[1].split(":");
-						this.startTime = startTime2[0] + startTime2[1];
-						String[] endDateTime = rs.getString("tilTidspunkt").split(" ");
-						String[] endTime2 = endDateTime[1].split(":");
-						this.endTime = endTime2[0] + endTime2[1];
+						String endTime = rs.getString("tilTidspunkt").replace(":","").substring(0,4);
+						String fromTime = rs.getString("fraTidspunkt").replace(":", "").substring(0,4);
+						this.endTime = endTime;
+						this.startTime=fromTime;
 					}
 					meeting = new Meeting(date, meetingLeader, startTime, endTime, title);
 					if(description !=null){
 						meeting.setDescription(description);
 					}
-					meeting.setRoom(room);
+					meeting.setRoom(room+"");
 					} finally {
 						closeConnection();
 					}
@@ -103,7 +108,9 @@ public class MeetingBuilder extends Database{
 		}
 		
 		public static void main(String[] args) throws Exception{
-			MeetingBuilder mb = new MeetingBuilder();
-			mb.getMeeting(1);
+			Person p = new Person("larshbj@gmail.com", "kalender", false);
+			p.setUserID(8);
+			MeetingBuilder mb = new MeetingBuilder(p.getUserID());
+			System.out.println(mb.getMeeting(1));
 		}
 }
