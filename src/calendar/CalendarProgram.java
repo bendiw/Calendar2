@@ -367,7 +367,7 @@ public class CalendarProgram {
 		System.out.println("Personalia updated!");
 	}
 	
-	public void upDateMeetingList(){
+	public void updateMeetingList(){
 		this.c.mapMeetings(mb.getAllMeetings());	
 		}
 	
