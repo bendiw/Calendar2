@@ -9,6 +9,11 @@ public class Invitation {
 	private List<Group> invitedGroups;
 	protected Boolean priority;
 	
+	public Invitation(Meeting meeting, boolean confirmed, List<Person> invitedPersons){
+		this.meeting = meeting;
+		this.invitedPersons = invitedPersons;
+		this.confirmed = confirmed;
+	}
 	
 	private void sendInviteToGroups() {
 		for (Group g : invitedGroups) {
