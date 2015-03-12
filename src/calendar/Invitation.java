@@ -7,6 +7,7 @@ public class Invitation {
 	protected Meeting meeting;
 	private List<Person> invitedPersons;
 	private List<Group> invitedGroups;
+	protected Boolean priority;
 	
 	
 	private void sendInviteToGroups() {
@@ -21,6 +22,10 @@ public class Invitation {
 		for (Person p : invitedPersons) {
 			p.addInvitation(this);				
 		}
+	}
+	
+	public void setPriority(boolean pri) {
+		this.priority = pri;
 	}
 	
 	

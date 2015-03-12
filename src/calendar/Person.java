@@ -31,6 +31,7 @@ public class Person extends Database implements NotificationListener{
 	private ArrayList<Group> groups = new ArrayList<Group>();
 	protected ArrayList<Invitation> invites = new ArrayList<Invitation>();
 	protected ArrayList<Notification> notifications = new ArrayList<Notification>();
+	protected ArrayList<Invitation> oldInvites = new ArrayList<Invitation>();
 
 	
 	
@@ -63,7 +64,7 @@ public class Person extends Database implements NotificationListener{
 		this.newUser = newUser;
 		if(newUser) {
 			if(emailExists(email)) {
-				System.out.println("Eposten finnes allerede, pr�v en annen epost.");
+				System.out.println("Eposten finnes allerede, pr�v en annen epost.");
 				throw new IllegalArgumentException();
 			} else {
 				makeNewUser(email, password);
@@ -73,7 +74,7 @@ public class Person extends Database implements NotificationListener{
 			if(emailExists(email)) {
 				loginUser(email, password);
 			} else {
-				System.out.println("Eposten finnes ikke, pr�v en ny epost.");
+				System.out.println("Eposten finnes ikke, pr�v en ny epost.");
 				throw new IllegalArgumentException();
 			}
 		}
@@ -268,22 +269,25 @@ public class Person extends Database implements NotificationListener{
 			invites.remove(inv);
 		}else {
 			invites.remove(inv);
+			oldInvites.add(inv);
 			cal.addMeeting(inv.meeting);
 			
 			if (cal.collidesWith(inv.meeting).isEmpty()) {
-				inv.meeting.setPriority(true); //setter møtet til prioritet 1
+				inv.setPriority(true); //setter møtet til prioritet 1
 				inv.meeting.addPerson(this);
 				// varsle møteleder i meeting om at person har godtatt invitasjonen
 			}else {
 				if (pri == true) {
-					for (Meeting m : cal.collidesWith(inv.meeting)) {
-						m.setPriority(false);
-						m.removePerson(this); //fjerner person fra attendinglist til møtene som krasjer
-					}inv.meeting.setPriority(true);
+					for (Invitation i : oldInvites) {
+						if(cal.collidesWith(inv.meeting).contains(i.meeting)){
+							i.setPriority(false);
+							i.meeting.removePerson(this);
+						}
+					}inv.setPriority(true);
 					inv.meeting.addPerson(this);
 					// varsle møteleder i meeting om at person har godtatt invitasjonen
 				}else {
-					inv.meeting.setPriority(false);
+					inv.setPriority(false);
 				}
 			}
 		}
