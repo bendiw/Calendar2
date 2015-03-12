@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Scanner;
 
 
+
+
 import org.joda.time.LocalDate;
 
 public class CalendarProgram {
@@ -15,6 +17,10 @@ public class CalendarProgram {
 	private PersonBuilder pb;
 	private PersonUpdater pu;
 	private MeetingBuilder mb;
+	
+	public String getInvitationCount(){
+		return p.getInv().size()+" pending invitations.";
+	}
 	
 	public String getNotifications(){
 		try{
@@ -212,7 +218,7 @@ public class CalendarProgram {
 				break;
 			}else if(Integer.parseInt(input)==4){
 				inputForMeeting(true);
-//				showSingleDay(toView); Kan legges til dersom det er ønskelig å gå tilbake til single date. Nested call problem?
+//				showSingleDay(toView); Kan legges til dersom det er ï¿½nskelig ï¿½ gï¿½ tilbake til single date. Nested call problem?
 				break;
 			}
 			System.out.println("Invalid command!");
@@ -367,11 +373,64 @@ public class CalendarProgram {
 		System.out.println("Personalia updated!");
 	}
 	
-	public void updateMeetingList(){
+	public void updateMeetingList() throws Exception{
 		this.c.mapMeetings(mb.getAllMeetings());	
-		}
+	}
 	
-	public void run(){
+	
+	public void singleInvHandler(Invitation inv){
+		System.out.println("Responding to following invitation:");
+		System.out.println(inv);
+		System.out.println("Collides with following events:\n");
+		for (Meeting m : c.collidesWith(inv.meeting)) {
+			System.out.println(m);
+		}
+		while(true){
+			try{
+				System.out.println("Press Enter to exit. Menu:\n1. Attend this meeting and prioritize\n2. Attend this meeting, low priority\n3. Decline meeting");
+				int choice = s.nextInt();
+				if(choice==1){
+					p.respond(inv, true, true);
+					System.out.println("Confirmed!");
+					return;
+				}else if(choice==2){
+					p.respond(inv,true,false);
+					System.out.println("Confirmed!");
+					return;
+				}else if(choice==3){
+					p.respond(inv,false,false);
+					System.out.println("Confirmed!");
+					return;
+				}else{
+					System.out.println("Invalid command.");
+				}
+			}catch(Exception e){
+				return;
+			}
+		}
+	}
+	
+	public void invitationHandler(){
+		int i = 1;
+		System.out.println("Current pending invitations:");
+		for (Invitation inv : p.getInv()) {
+			System.out.print(p.getInv().indexOf(inv)+". ");
+			System.out.println(inv);
+		}
+		try{
+			while(true){
+				System.out.println("Enter an invitation's number to respond, or press Enter to exit.");
+				String input = s.nextLine();
+				if(Integer.parseInt(input)<p.getInv().size()&&Integer.parseInt(input)>0){
+					singleInvHandler(p.getInv().get(Integer.parseInt(input)));
+				}
+			}
+		}catch(Exception e){
+			return;
+		}		
+	}
+	
+	public void run() throws Exception{
 //		Person user1 = null;
 //		System.out.println(user1);
 		String choice1;
@@ -407,14 +466,14 @@ public class CalendarProgram {
 					String position = s.nextLine();
 					p = new Person(email, password, true);
 					pu.updateAll(firstname, lastname, address, postnr, mobile, position, p.getEmail());
-					System.out.println("\n\n" + "Grattis, du har nå en bruker!" + "\n" + "Velkommen til kalender din");
+					System.out.println("\n\n" + "Grattis, du har nï¿½ en bruker!" + "\n" + "Velkommen til kalender din");
 					break;
 				} else {
 					p = new Person(email, password, false);
 					break;
 				}
 			}catch(IllegalArgumentException e) {
-				System.out.println("Prøv på nytt" + "\n");
+				System.out.println("Prï¿½v pï¿½ nytt" + "\n");
 				continue;
 			}catch(Exception e){
 				System.out.println("Please enter a command.");
@@ -425,6 +484,7 @@ public class CalendarProgram {
 		updateMeetingList();
 		printer.print(c);
 		System.out.println(getNotifications());
+		System.out.println(getInvitationCount());
 		System.out.println("Press enter to show menu.");
 		while(true){
 			int choice=0;
@@ -437,10 +497,12 @@ public class CalendarProgram {
 				printInvitations();
 				printer.print(c);
 				System.out.println(getNotifications());
+				System.out.println(getInvitationCount());
 			}else if(choice ==2){
 				inputForMeeting(false);
 				printer.print(c);
 				System.out.println(getNotifications());
+				System.out.println(getInvitationCount());
 			}else if(choice==3){
 				System.out.println("Hit Enter for today, or input date to view, format DD MM YYYY...");
 				LocalDate toView;
@@ -466,22 +528,28 @@ public class CalendarProgram {
 				showSingleDay(toView);
 				printer.print(c);
 				System.out.println(getNotifications());
+				System.out.println(getInvitationCount());
 
 			}else if(choice ==4){
 				c.rollMonth(true);
 				printer.print(c);
 				System.out.println(getNotifications());
+				System.out.println(getInvitationCount());
+
 
 			}else if(choice ==5){
 				c.rollMonth(false);
 				printer.print(c);
 				System.out.println(getNotifications());
+				System.out.println(getInvitationCount());
 
 			}else if(choice == 6){
 				for (Notification n : p.getNotifications()) {
 					System.out.println(n);
 				}
-			}	
+			}else if(choice == 7){
+				invitationHandler();
+			}
 		}
 	}
 	

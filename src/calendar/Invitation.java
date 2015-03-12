@@ -8,6 +8,7 @@ public class Invitation {
 	private List<Person> invitedPersons;
 	private List<Group> invitedGroups;
 	protected Boolean priority;
+	protected boolean confirmed;
 	
 	public Invitation(Meeting meeting, boolean confirmed, List<Person> invitedPersons){
 		this.meeting = meeting;

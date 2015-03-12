@@ -35,6 +35,14 @@ public class Person extends Database implements NotificationListener{
 
 	
 	
+	public List<Invitation> getInv(){
+		return this.invites;
+	}
+	
+	public List<Invitation> getOldInv(){
+		return this.oldInvites;
+	}
+	
 	//fra User
 	String password;
 	boolean newUser;
