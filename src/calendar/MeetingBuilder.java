@@ -35,6 +35,52 @@ public class MeetingBuilder extends Database{
 			this.ownerID=ownerID;
 		}
 		
+		public void addMeeting(Meeting meeting) throws Exception{
+			try {
+				openConnection();
+				pstmt = conn.prepareStatement("INSERT INTO Møte (tittel, beskrivelse, romID, fraTidspunkt, tilTidspunkt, dato) "
+						+ " VALUES (?, ?, ?, ?, ?, ?)");
+				pstmt.setString(1, meeting.getTitle());
+				pstmt.setString(2, meeting.getDescription());
+				pstmt.setString(3, meeting.getStartTime());
+				pstmt.setString(4, meeting.getEndTime());
+				pstmt.setString(5, meeting.getDate().toString());
+				
+				pstmt.execute();
+//				return true;
+			} catch (Exception e) {
+				throw new IllegalArgumentException("Could not upload meeting to database");
+			}
+			finally {
+				closeConnection();
+			}	
+	}
+	
+	public ArrayList<Integer> getRoomList() throws Exception {
+		super.openConnection();
+		stmt = conn.createStatement();
+		rs = stmt.executeQuery("SELECT romID FROM Rom;");
+		while(rs.next()) {
+			int toAdd = rs.getInt("romID");
+			list.add(toAdd);
+		}
+		return list;
+	}
+	
+	public ArrayList<Integer> getAvailableRoomList(LocalDate date, String start, String end) throws Exception {
+		super.openConnection();
+		stmt = conn.createStatement();
+		rs = stmt.executeQuery("SELECT distinct R.romID " 
+				+ "FROM Rom R "
+				+ "WHERE R.romID NOT IN (SELECT M.romID FROM Møte M WHERE M.dato = " + date + " AND " + start + " between M.fraTidspunkt AND M.tilTidspunkt "
+				+ "OR " + end + " between M.fraTidspunkt AND M.tilTidspunkt);");
+		while(rs.next()) {
+			int toAdd = rs.getInt("romID");
+			list.add(toAdd);
+		}
+		return list;
+	}
+		
 		public ArrayList<Integer> addAttendingUserIDs(int meetingID) throws Exception {
 			super.openConnection();
 			stmt = conn.createStatement();
