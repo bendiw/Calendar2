@@ -7,6 +7,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import kalender.Person;
+import kalender.PersonBuilder;
+
 import org.joda.time.LocalDate;
 
 public class MeetingBuilder extends Database{
@@ -27,9 +30,34 @@ public class MeetingBuilder extends Database{
 		private PreparedStatement pstmt = null;
 		private int ownerID;
 		
+		ArrayList<Integer> list=new ArrayList<Integer>();
+		PersonBuilder pb = new PersonBuilder();
+		
 		public MeetingBuilder(int ownerID){
 			this.ownerID=ownerID;
 		}
+		
+		public ArrayList<Integer> addAttendingUserIDs(int meetingID) throws Exception {
+			super.openConnection();
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("SELECT B.BrukerID FROM Bruker B, Invitasjon I, Møte M WHERE M.møteID = I.Møte_møteID AND I.Bruker_brukerID = B.BrukerID "
+					+ "AND I.Bekreftet = 1 AND I.prioritet = 1 AND M.møteID = " + meetingID + ";"); 
+			while(rs.next()) {
+				int toAdd = rs.getInt("brukerID");
+				list.add(toAdd);
+			}
+			return list;
+		}
+		
+		public List<Person> getAllAttending(int meetingID) throws Exception{
+			List<Person> toReturn = new ArrayList<Person>();
+			ArrayList<Integer> list = addAttendingUserIDs(meetingID);
+			for (int userID : list) {
+				toReturn.add(pb.getPerson(userID));
+			}
+			return toReturn;
+		}
+		
 		
 			
 		public boolean meetingIDExists(int meetingID) throws Exception {
