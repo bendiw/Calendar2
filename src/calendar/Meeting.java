@@ -19,7 +19,6 @@ public class Meeting extends Database {
 	private String startTime;
 	private String endTime="-1";
 	private String room;
-	protected boolean priority;
 	
 	public int[] getDuration(){
 		int hours = Integer.parseInt(endTime.substring(0, 2))-Integer.parseInt(startTime.substring(0, 2));
@@ -49,6 +48,7 @@ public class Meeting extends Database {
 	}
 	
 	public void addPerson(Person p){
+		removePersonFromMaybe(p);
 		if(!attending.contains(p)){
 			attending.add(p);
 		}
@@ -73,19 +73,37 @@ public class Meeting extends Database {
 		}
 	}
 	
+	public List<Person> getMaybeAttendings() {
+		return maybeAttending;
+	}
+	
+	public List<Person> getAttending() {
+		return attending;
+	}
+	
+	// Metoden sletter møtet i alle kalenderne (også for de som har satt prioritet=false), og
+	//fjerner den tilhørende invitasjonen. Skal til slutt slette møteobjektet i DB (ikke ferdig)
 	public void cancelMeeting() {
 		Notification n = new Notification(this);
 		for (Person p : attending) {
 			p.notifications.add(n);
 			p.getCalendar().deleteMeeting(this);
 			//dersom møtet har pri1 må et annet settes til pri1, (ikke ferdig)
-			//sletter bare møtet for de som står på deltar, ikke på kanskje, case? (ikke ferdig)
 			for (Invitation inv : p.oldInvites) {
 				if (inv.meeting == this) {
-					p.oldInvites.remove(inv); // fjerner invitasjonen til møtet for alle persons som attender
+					p.oldInvites.remove(inv);
 					if (inv.priority == true) {
 						//kjør en metode som får bruker til å velge mellom møtene som kolliderte med inv
 					}
+				}
+			}
+		}
+		for (Person p : maybeAttending) {
+			p.getCalendar().deleteMeeting(this);
+			// varsler ikke de som står på kanskje om at møtet er kansellert
+			for (Invitation inv : p.oldInvites) {
+				if (inv.meeting == this) {
+					p.oldInvites.remove(inv);
 				}
 			}
 		}
@@ -96,14 +114,7 @@ public class Meeting extends Database {
 		//må slette møtet i databasen (ikke ferdig)
 
 	}
-	
-	public void setPriority(boolean pri) {
-		priority = pri;
-	}
-	
-	public boolean getPriority() {
-		return priority;
-	}
+
 	
 	public void addGroup(Group g){
 		if(!groups.contains(g)){
@@ -134,7 +145,6 @@ public class Meeting extends Database {
 			return false;
 		}
 	}
-	
 	
 	
 	public Meeting(int id,LocalDate date, Person leader, String start, String end, String title){

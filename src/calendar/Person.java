@@ -279,12 +279,13 @@ public class Person extends Database implements NotificationListener{
 					for (Invitation i : oldInvites) {
 						if(cal.collidesWith(inv.meeting).contains(i.meeting)){
 							i.setPriority(false);
-							i.meeting.removePerson(this);
+							i.meeting.addPersonToMaybe(this);
 						}
 					}inv.setPriority(true);
 					inv.meeting.addPerson(this);
 				}else {
 					inv.setPriority(false);
+					inv.meeting.addPersonToMaybe(this);
 				}
 			}
 		}
