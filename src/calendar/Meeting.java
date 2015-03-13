@@ -6,13 +6,15 @@ import java.util.List;
 
 import org.joda.time.*;
 
-public class Meeting {
+public class Meeting extends Database {
 	
+	private int meetingID;
 	private LocalDate date;
 	private String description;
 	private String title;
 	protected Person meetingLeader;
 	private List<Person> attending; //listeners for notifications
+	private List<Person> maybeAttending;
 	private List<Group> groups; // Mulig å fjerne denne? Bare persons som kan attende.
 	private String startTime;
 	private String endTime="-1";
@@ -30,6 +32,10 @@ public class Meeting {
 	
 	public String toString(){
 		return title+"\n"+durationToString()+"\n"+"Description: "+description+"\nAttending: ";
+	}
+	
+	public String toStringSimple(){
+		return title+"\n"+durationToString()+"\n"+"Description: "+description;
 	}
 	
 	public String durationToString(){
@@ -52,6 +58,43 @@ public class Meeting {
 		if (attending.contains(p)) {
 			attending.remove(p);
 		}
+	}
+	
+	public void addPersonToMaybe(Person p) {
+		removePerson(p);
+		if (!maybeAttending.contains(p)) {
+			maybeAttending.add(p);
+		}
+	}
+	
+	public void removePersonFromMaybe(Person p) {
+		if (maybeAttending.contains(p)) {
+			maybeAttending.remove(p);
+		}
+	}
+	
+	public void cancelMeeting() {
+		Notification n = new Notification(this);
+		for (Person p : attending) {
+			p.notifications.add(n);
+			p.getCalendar().deleteMeeting(this);
+			//dersom møtet har pri1 må et annet settes til pri1, (ikke ferdig)
+			//sletter bare møtet for de som står på deltar, ikke på kanskje, case? (ikke ferdig)
+			for (Invitation inv : p.oldInvites) {
+				if (inv.meeting == this) {
+					p.oldInvites.remove(inv); // fjerner invitasjonen til møtet for alle persons som attender
+					if (inv.priority == true) {
+						//kjør en metode som får bruker til å velge mellom møtene som kolliderte med inv
+					}
+				}
+			}
+		}
+		meetingLeader.notifications.add(n);
+		meetingLeader.getCalendar().deleteMeeting(this);
+		
+		
+		//må slette møtet i databasen (ikke ferdig)
+
 	}
 	
 	public void setPriority(boolean pri) {
@@ -94,7 +137,8 @@ public class Meeting {
 	
 	
 	
-	public Meeting(LocalDate date, Person leader, String start, String end, String title){
+	public Meeting(int id,LocalDate date, Person leader, String start, String end, String title){
+		this.meetingID=id;
 		this.date=date;
 		this.meetingLeader = leader;
 		this.startTime=start;

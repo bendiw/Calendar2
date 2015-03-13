@@ -149,7 +149,6 @@ public class Person extends Database implements NotificationListener{
 		return false;
 	}
 	
-	
 	public String toString(){
 		return this.userID+"\n"+name+"\n"+email+"\n"+address+"\n"+mobile+"\n"+position+"\n"+postnr;
 	}
@@ -180,7 +179,6 @@ public class Person extends Database implements NotificationListener{
 	public Person(GeneralCal c){
 		this.cal=c;
 	}
-	
 	
 	private boolean isValidName(String name){
 		int count = 0;
@@ -221,6 +219,7 @@ public class Person extends Database implements NotificationListener{
 		}
 		return true;
 	}
+	
 	public void setEmail(String email) {
 //		if(isValidEmail(email)) {
 			this.email = email;
@@ -261,16 +260,7 @@ public class Person extends Database implements NotificationListener{
 		// trenger kanskje mer validering!
 
 	}
-	
-	//respond (Boolean ans) setter automatisk pri til true
-	//respond (Boolean ans, Boolean pri)
-	//setPriority: dersom et møte endrer prioritet fra false til true,
-	//settes pri til alle møter som krasjer til false
-	
-	
-	
-	
-	
+
 	public void respond(Invitation inv, boolean ans, boolean pri) {
 		if (ans == false) {
 			Notification noti = new Notification(this);
@@ -284,7 +274,6 @@ public class Person extends Database implements NotificationListener{
 			if (cal.collidesWith(inv.meeting).isEmpty()) {
 				inv.setPriority(true); //setter møtet til prioritet 1
 				inv.meeting.addPerson(this);
-				// varsle møteleder i meeting om at person har godtatt invitasjonen
 			}else {
 				if (pri == true) {
 					for (Invitation i : oldInvites) {
@@ -294,7 +283,6 @@ public class Person extends Database implements NotificationListener{
 						}
 					}inv.setPriority(true);
 					inv.meeting.addPerson(this);
-					// varsle møteleder i meeting om at person har godtatt invitasjonen
 				}else {
 					inv.setPriority(false);
 				}

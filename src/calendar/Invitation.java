@@ -31,6 +31,10 @@ public class Invitation {
 	}
 	
 	public void setPriority(boolean pri) {
+		if (priority == true) {
+			// sjekk om møtet eksisterer i databasen (kan ha blitt slettet uten å fått varsel dersom en
+			// person har møtet med priority = false
+		}
 		this.priority = pri;
 	}
 	

@@ -20,7 +20,7 @@ public class Notification {
 	
 	public Notification(Meeting m) {
 		subject = "Meeting cancelled";
-		message = m.toString();
+		message = m.toStringSimple();
 	}
 	
 	public Notification(Person p) {

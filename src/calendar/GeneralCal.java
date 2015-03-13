@@ -50,6 +50,8 @@ public class GeneralCal {
 	
 
 	
+
+	
 	public List<Meeting> getDayAgenda(LocalDate date){
 		if(meetingsByDate.containsKey(date)){
 			return meetingsByDate.get(date);
@@ -118,6 +120,15 @@ public class GeneralCal {
 		}else{
 			meetingsByDate.put(m.getDate(), new ArrayList<Meeting>());
 			meetingsByDate.get(m.getDate()).add(m);
+		}
+	}
+	
+	public void deleteMeeting(Meeting m) {
+		if (meetingsByDate.containsKey(m.getDate())) {
+			for (iterable_type iterable_element : iterable) {
+				
+			}
+			meetingsByDate.get(m.getDate()).remove(m);
 		}
 	}
 	
