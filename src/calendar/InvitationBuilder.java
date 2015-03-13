@@ -7,22 +7,29 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joda.time.LocalDate;
+
 public class InvitationBuilder extends Database {
 	
 	protected MeetingBuilder mb;
-	protected PersonBuilder pb;
+	protected PersonBuilder pb = new PersonBuilder();
 	//database
 	protected Statement stmt = null;
 	protected ResultSet rs = null;
 	protected String query = null;
 	protected PreparedStatement pstmt = null;
 	
-	ArrayList<Integer> list;
-		
+	ArrayList<Integer> list=new ArrayList<Integer>();
+	
+	public InvitationBuilder(int personID) throws Exception{
+		this.pb.getPerson(personID);
+		this.mb = new MeetingBuilder(personID);
+	}
+	
 	public boolean invitationIDExists(int meetingID, int brukerID) throws Exception {
 		try {
 			openConnection();
-			pstmt = conn.prepareStatement("SELECT I.invitationID, brukerID FROM invitasjon I WHERE I.bruker_brukerID = " + brukerID + "AND I.møte_møteID = " + meetingID + ";" );
+			pstmt = conn.prepareStatement("SELECT * FROM Invitasjon I WHERE I.Bruker_brukerID = " + brukerID + " AND I.Møte_møteID = " + meetingID + ";" );
 			rs = pstmt.executeQuery();
 			while (rs.next()) {
 				return true;
@@ -33,17 +40,22 @@ public class InvitationBuilder extends Database {
 		return false;
 	}
 	
-	public ArrayList<Integer> addMeetingIDtoList(int userID) throws SQLException {
-		stmt = conn.createStatement();
-		stmt.executeQuery("SELECT møte_møteID FROM invitasjon WHERE invitasjon.bruker_brukerID = "+ userID + ";");
-		while(rs.next()) {
-			list.add(rs.getInt("møte_møteID"));
+	public ArrayList<Integer> addMeetingIDtoList(int userID) throws Exception {
+		try {
+			openConnection();
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("SELECT Møte_møteID FROM Invitasjon WHERE Invitasjon.Bruker_brukerID = "+ userID + ";");
+			while(rs.next()) {
+				list.add(rs.getInt("Møte_møteID"));
+			}
+		} finally {
+			closeConnection();
 		}
 		return list;
 	}
 	
 	
-	public List<Invitation> getAllInvitations(int userID) throws SQLException{
+	public List<Invitation> getAllInvitations(int userID) throws Exception{
 		List<Invitation> toReturn = new ArrayList<Invitation>();
 		ArrayList<Integer> list = addMeetingIDtoList(userID);
 		for (int meetingID : list) {
@@ -62,11 +74,16 @@ public class InvitationBuilder extends Database {
 		ArrayList<Person> invited = new ArrayList<Person>();
 			try {
 				openConnection();
-				pstmt = conn.prepareStatement("SELECT bruker_brukerID FROM invitasjon WHERE I.bekreftet = " + null + ";");
+				pstmt = conn.prepareStatement("SELECT Bruker_brukerID FROM Invitasjon I WHERE I.Bekreftet = " + null +" AND I.Møte_møteID = "+meetingID+ ";");
 				rs = pstmt.executeQuery();
 				while (rs.next()) {
-					invited.add(pb.getPerson(rs.getInt("bruker_brukerID")));
+					int user = rs.getInt("Bruker_brukerID");
+					Person toAdd = pb.getPerson(user);
+					invited.add(toAdd);
 //					this.position = rs.getString("stilling");
+				}
+				for (Person person : invited) {
+					System.out.println(person);
 				}
 				} finally {
 					closeConnection();
@@ -74,15 +91,21 @@ public class InvitationBuilder extends Database {
 			return invited;
 	}
 	
-	public Invitation getInvitation(int meetingID, int brukerID){
+	public Invitation getInvitation(int meetingID, int brukerID) throws Exception{
 		Invitation inv;
-		boolean confirmed;
-		Meeting meeting = mb.getMeeting(meetingID);
+		Meeting meeting = new Meeting(new LocalDate());
+		boolean confirmed=false;
+		try {
+			meeting = mb.getMeeting(meetingID);
+			
+		} catch(Exception e) {
+			System.out.println("Could not find meeting");
+		}
 		List<Person> invited = getInvitedPersons(meetingID);
 		if (invitationIDExists(meetingID, brukerID)) {
 			try {
 				openConnection();
-				pstmt = conn.prepareStatement("SELECT * FROM invitasjon WHERE I.møte_møteID = " + meetingID + "AND I.bruker_brukerID = " +brukerID+ ";");
+				pstmt = conn.prepareStatement("SELECT * FROM Invitasjon I WHERE I.Møte_møteID = " + meetingID + " AND I.Bruker_brukerID = " +brukerID+ ";");
 				rs = pstmt.executeQuery();
 				while (rs.next()) {
 					confirmed = rs.getBoolean("bekreftet");
@@ -94,11 +117,12 @@ public class InvitationBuilder extends Database {
 				}
 			return inv;
 		} else {
-			System.out.println("Person "+brukerID + " is not invited to this meeting.");
+			throw new IllegalArgumentException("Person "+brukerID+" is not invited to this meeting.");
 		}
 	}
-
-
 	
-
+	public static void main(String[] args) throws Exception {
+		InvitationBuilder ib = new InvitationBuilder(8);
+		System.out.println(ib.getAllInvitations(8));
+	}
 }
