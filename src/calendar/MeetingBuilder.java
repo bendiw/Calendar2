@@ -7,8 +7,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import kalender.Person;
-import kalender.PersonBuilder;
 
 import org.joda.time.LocalDate;
 
