@@ -1,4 +1,4 @@
-package src.calendar;
+package calendar;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,11 +18,12 @@ public class InvitationBuilder extends Database {
 	protected ResultSet rs = null;
 	protected String query = null;
 	protected PreparedStatement pstmt = null;
+	protected int ownerID;
 	
 	ArrayList<Integer> list=new ArrayList<Integer>();
 	
 	public InvitationBuilder(int personID) throws Exception{
-		this.pb.getPerson(personID);
+		this.ownerID = personID;
 		this.mb = new MeetingBuilder(personID);
 	}
 	
@@ -40,11 +41,25 @@ public class InvitationBuilder extends Database {
 		return false;
 	}
 	
-	public ArrayList<Integer> addMeetingIDtoList(int userID) throws Exception {
+	public ArrayList<Integer> addPendingIDtoList(int userID) throws Exception {
 		try {
 			openConnection();
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT Møte_møteID FROM Invitasjon WHERE Invitasjon.Bruker_brukerID = "+ userID + ";");
+			rs = stmt.executeQuery("SELECT Møte_møteID FROM Invitasjon WHERE Invitasjon.Bruker_brukerID = "+ userID + " AND Invitasjon.bekreftet IS NULL;");
+			while(rs.next()) {
+				list.add(rs.getInt("Møte_møteID"));
+			}
+		} finally {
+			closeConnection();
+		}
+		return list;
+	}
+	
+	public ArrayList<Integer> addOldIDtoList(int userID) throws Exception {
+		try {
+			openConnection();
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("SELECT Møte_møteID FROM Invitasjon WHERE Invitasjon.Bruker_brukerID = "+ userID + " AND Invitasjon.bekreftet IS NOT NULL;");
 			while(rs.next()) {
 				list.add(rs.getInt("Møte_møteID"));
 			}
@@ -55,11 +70,20 @@ public class InvitationBuilder extends Database {
 	}
 	
 	
-	public List<Invitation> getAllInvitations(int userID) throws Exception{
-		List<Invitation> toReturn = new ArrayList<Invitation>();
-		ArrayList<Integer> list = addMeetingIDtoList(userID);
+	public ArrayList<Invitation> getAllPendingInvitations() throws Exception{
+		ArrayList<Invitation> toReturn = new ArrayList<Invitation>();
+		ArrayList<Integer> list = addPendingIDtoList(ownerID);
 		for (int meetingID : list) {
-			toReturn.add(getInvitation(meetingID, userID));
+			toReturn.add(getInvitation(meetingID, ownerID));
+		}
+		return toReturn;
+	}
+	
+	public ArrayList<Invitation> getAllOldInvitations() throws Exception{
+		ArrayList<Invitation> toReturn = new ArrayList<Invitation>();
+		ArrayList<Integer> list = addOldIDtoList(ownerID);
+		for (int meetingID : list) {
+			toReturn.add(getInvitation(meetingID, ownerID));
 		}
 		return toReturn;
 	}
@@ -122,7 +146,7 @@ public class InvitationBuilder extends Database {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		InvitationBuilder ib = new InvitationBuilder(8);
-		System.out.println(ib.getAllInvitations(8));
+		InvitationBuilder ib = new InvitationBuilder(15);
+		System.out.println(ib.getAllPendingInvitations());
 	}
 }

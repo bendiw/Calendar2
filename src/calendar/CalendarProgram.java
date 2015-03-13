@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 
 
+
 import org.joda.time.LocalDate;
 
 public class CalendarProgram {
@@ -17,6 +18,7 @@ public class CalendarProgram {
 	private PersonBuilder pb;
 	private PersonUpdater pu;
 	private MeetingBuilder mb;
+	private InvitationBuilder ib;
 	
 	public String getInvitationCount(){
 		return p.getInv().size()+" pending invitations.";
@@ -482,6 +484,10 @@ public class CalendarProgram {
 		}
 		mb = new MeetingBuilder(p.getUserID());
 		updateMeetingList();
+		ib = new InvitationBuilder(p.getUserID());
+		System.out.println(p.getUserID());
+		p.invites = ib.getAllPendingInvitations();
+		p.oldInvites = ib.getAllOldInvitations();
 		printer.print(c);
 		System.out.println(getNotifications());
 		System.out.println(getInvitationCount());
@@ -559,7 +565,7 @@ public class CalendarProgram {
 //		cp.run();
 //	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		CalendarProgram cp = new CalendarProgram();
 		cp.init();
 		cp.run();
