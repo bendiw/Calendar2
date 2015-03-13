@@ -11,7 +11,7 @@ public class Meeting {
 	private LocalDate date;
 	private String description;
 	private String title;
-	private Person meetingLeader;
+	protected Person meetingLeader;
 	private List<Person> attending; //listeners for notifications
 	private List<Group> groups; // Mulig å fjerne denne? Bare persons som kan attende.
 	private String startTime;

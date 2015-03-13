@@ -273,7 +273,8 @@ public class Person extends Database implements NotificationListener{
 	
 	public void respond(Invitation inv, boolean ans, boolean pri) {
 		if (ans == false) {
-			// varsle møteleder om at this har avslått invitasjonen
+			Notification noti = new Notification(this);
+			inv.meeting.meetingLeader.notifications.add(noti);
 			invites.remove(inv);
 		}else {
 			invites.remove(inv);
