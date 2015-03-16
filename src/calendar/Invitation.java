@@ -38,6 +38,9 @@ public class Invitation {
 		this.priority = pri;
 	}
 	
+	public String toString(){
+		return "Invited by "+this.meeting.meetingLeader+" to:\n"+this.meeting;
+	}
 	
 	
 	public static void main(String[] args) {

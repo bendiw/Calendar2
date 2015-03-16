@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import org.joda.time.LocalDate;
 
 public class MeetingBuilder extends Database{
@@ -27,9 +28,80 @@ public class MeetingBuilder extends Database{
 		private PreparedStatement pstmt = null;
 		private int ownerID;
 		
+		ArrayList<Integer> list=new ArrayList<Integer>();
+		PersonBuilder pb = new PersonBuilder();
+		
 		public MeetingBuilder(int ownerID){
 			this.ownerID=ownerID;
 		}
+		
+		public void addMeeting(Meeting meeting) throws Exception{
+			try {
+				openConnection();
+				pstmt = conn.prepareStatement("INSERT INTO Møte (tittel, beskrivelse, romID, fraTidspunkt, tilTidspunkt, dato) "
+						+ " VALUES (?, ?, ?, ?, ?, ?)");
+				pstmt.setString(1, meeting.getTitle());
+				pstmt.setString(2, meeting.getDescription());
+				pstmt.setString(3, meeting.getStartTime());
+				pstmt.setString(4, meeting.getEndTime());
+				pstmt.setString(5, meeting.getDate().toString());
+				
+				pstmt.execute();
+//				return true;
+			} catch (Exception e) {
+				throw new IllegalArgumentException("Could not upload meeting to database");
+			}
+			finally {
+				closeConnection();
+			}	
+	}
+	
+	public ArrayList<Integer> getRoomList() throws Exception {
+		super.openConnection();
+		stmt = conn.createStatement();
+		rs = stmt.executeQuery("SELECT romID FROM Rom;");
+		while(rs.next()) {
+			int toAdd = rs.getInt("romID");
+			list.add(toAdd);
+		}
+		return list;
+	}
+	
+	public ArrayList<Integer> getAvailableRoomList(LocalDate date, String start, String end) throws Exception {
+		super.openConnection();
+		stmt = conn.createStatement();
+		rs = stmt.executeQuery("SELECT distinct R.romID " 
+				+ "FROM Rom R "
+				+ "WHERE R.romID NOT IN (SELECT M.romID FROM Møte M WHERE M.dato = " + date + " AND " + start + " between M.fraTidspunkt AND M.tilTidspunkt "
+				+ "OR " + end + " between M.fraTidspunkt AND M.tilTidspunkt);");
+		while(rs.next()) {
+			int toAdd = rs.getInt("romID");
+			list.add(toAdd);
+		}
+		return list;
+	}
+		
+		public ArrayList<Integer> addAttendingUserIDs(int meetingID) throws Exception {
+			super.openConnection();
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("SELECT B.BrukerID FROM Bruker B, Invitasjon I, Møte M WHERE M.møteID = I.Møte_møteID AND I.Bruker_brukerID = B.BrukerID "
+					+ "AND I.Bekreftet = 1 AND I.prioritet = 1 AND M.møteID = " + meetingID + ";"); 
+			while(rs.next()) {
+				int toAdd = rs.getInt("brukerID");
+				list.add(toAdd);
+			}
+			return list;
+		}
+		
+		public List<Person> getAllAttending(int meetingID) throws Exception{
+			List<Person> toReturn = new ArrayList<Person>();
+			ArrayList<Integer> list = addAttendingUserIDs(meetingID);
+			for (int userID : list) {
+				toReturn.add(pb.getPerson(userID));
+			}
+			return toReturn;
+		}
+		
 		
 			
 		public boolean meetingIDExists(int meetingID) throws Exception {

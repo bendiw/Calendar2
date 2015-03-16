@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 
 
+
 import org.joda.time.LocalDate;
 
 public class CalendarProgram {
@@ -17,6 +18,7 @@ public class CalendarProgram {
 	private PersonBuilder pb;
 	private PersonUpdater pu;
 	private MeetingBuilder mb;
+	private InvitationBuilder ib;
 	
 	public String getInvitationCount(){
 		return p.getInv().size()+" pending invitations.";
@@ -30,27 +32,7 @@ public class CalendarProgram {
 		}
 	}
 	
-	public void printInvitations(){
-//		LocalDate date;
-		if(p.invites.isEmpty()){
-			System.out.println("Currently no invitations.");
-			return;
-		}
-		for (Invitation inv : p.invites) {
-//			date = inv.meeting.getDate();
-			System.out.println(inv);
-		}
-		String invMenu = "Enter the invitation's index number to respond, or press Enter to exit to main menu.";
-		String input = s.nextLine();
-		while(true){
-			if(input.isEmpty()){
-				return;
-			}
-			if(Integer.parseInt(input)<=p.invites.size()&&Integer.parseInt(input)>0){
-				System.out.println("Responding to the following invitation:\n"+p.invites.get(Integer.parseInt(input)));
-			}
-		}
-	}
+	
 	
 	public void init(){
 		c = new GeneralCal();
@@ -381,25 +363,47 @@ public class CalendarProgram {
 	public void singleInvHandler(Invitation inv){
 		System.out.println("Responding to following invitation:");
 		System.out.println(inv);
-		System.out.println("Collides with following events:\n");
+		if(c.collidesWith(inv.meeting).isEmpty()){
+			while(true){
+				try{
+					System.out.println("Press Enter to exit. Menu:\n1. Accept invitation\n2. Decline invitation");
+					int choice = Integer.parseInt(s.nextLine());
+					if(choice==1){
+						System.out.println("Confirmed!");
+						p.respond(inv, true, true);
+						return;
+					}else if(choice==2){
+						System.out.println("Confirmed!");
+						p.respond(inv,false,false);
+						return;
+					}else{
+						System.out.println("Invalid command.");
+					}
+				}catch(Exception e){
+					return;
+				}
+			}
+		}
+		System.out.println("Collides with following events:");
 		for (Meeting m : c.collidesWith(inv.meeting)) {
 			System.out.println(m);
 		}
 		while(true){
 			try{
-				System.out.println("Press Enter to exit. Menu:\n1. Attend this meeting and prioritize\n2. Attend this meeting, low priority\n3. Decline meeting");
-				int choice = s.nextInt();
+				System.out.println("Press Enter to exit. Menu:\n1. Attend this meeting, prioritized\n2. Attend this meeting, low priority\n3. Decline meeting");
+				int choice = Integer.parseInt(s.nextLine());
+				System.out.println(choice);
 				if(choice==1){
-					p.respond(inv, true, true);
 					System.out.println("Confirmed!");
+					p.respond(inv, true, true);
 					return;
 				}else if(choice==2){
-					p.respond(inv,true,false);
 					System.out.println("Confirmed!");
+					p.respond(inv,true,false);
 					return;
 				}else if(choice==3){
-					p.respond(inv,false,false);
 					System.out.println("Confirmed!");
+					p.respond(inv,false,false);
 					return;
 				}else{
 					System.out.println("Invalid command.");
@@ -414,15 +418,18 @@ public class CalendarProgram {
 		int i = 1;
 		System.out.println("Current pending invitations:");
 		for (Invitation inv : p.getInv()) {
-			System.out.print(p.getInv().indexOf(inv)+". ");
+			System.out.print((p.getInv().indexOf(inv)+1)+". ");
 			System.out.println(inv);
 		}
 		try{
+			System.out.println("Enter an invitation's number to respond, or press Enter to exit.");
 			while(true){
-				System.out.println("Enter an invitation's number to respond, or press Enter to exit.");
 				String input = s.nextLine();
-				if(Integer.parseInt(input)<p.getInv().size()&&Integer.parseInt(input)>0){
-					singleInvHandler(p.getInv().get(Integer.parseInt(input)));
+				try{
+					singleInvHandler(p.getInv().get(Integer.parseInt(input)-1));
+					return;
+				}catch(Exception e){
+					System.out.println("No meeting at specified index.");
 				}
 			}
 		}catch(Exception e){
@@ -482,6 +489,10 @@ public class CalendarProgram {
 		}
 		mb = new MeetingBuilder(p.getUserID());
 		updateMeetingList();
+		ib = new InvitationBuilder(p.getUserID());
+		System.out.println(p.getUserID());
+		p.invites = ib.getAllPendingInvitations();
+		p.oldInvites = ib.getAllOldInvitations();
 		printer.print(c);
 		System.out.println(getNotifications());
 		System.out.println(getInvitationCount());
@@ -494,7 +505,7 @@ public class CalendarProgram {
 				System.out.println(getMenu());
 			}
 			if(choice==1){
-				printInvitations();
+				invitationHandler();
 				printer.print(c);
 				System.out.println(getNotifications());
 				System.out.println(getInvitationCount());
@@ -559,7 +570,7 @@ public class CalendarProgram {
 //		cp.run();
 //	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		CalendarProgram cp = new CalendarProgram();
 		cp.init();
 		cp.run();
